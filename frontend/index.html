@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AWS Lambda File Server</title>
+  <style>
+    body {margin:0; height:100vh; display:flex; justify-content:center; align-items:center;
+          font-family:'Segoe UI',sans-serif; background:#f0f2f5;}
+    .card {background:#fff; padding:30px; border-radius:12px;
+           box-shadow:0 6px 20px rgba(0,0,0,0.1); width:340px; text-align:center;}
+    h2 {margin-bottom:20px; color:#2c3e50;}
+    input,button {width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #ccc;}
+    button {background:#0078d7; color:#fff; border:none; cursor:pointer; font-size:16px; font-weight:600;}
+    button:hover {background:#005fa3;}
+    .status {margin-top:10px; font-size:14px; color:#444;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>📂 AWS Lambda File Server</h2>
+    <input type="file" id="file">
+    <button onclick="upload()">⬆ Upload</button>
+    <input type="text" id="name" placeholder="Enter filename">
+    <button onclick="download()">⬇ Download</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    const up="https://<api-id>.execute-api.<region>.amazonaws.com/dev/upload";
+    const down="https://<api-id>.execute-api.<region>.amazonaws.com/dev/download";
+
+    async function upload(){
+      let f=document.getElementById("file").files[0];
+      if(!f) return show("⚠ Please select a file to upload.");
+      let fd=new FormData(); fd.append("file",f);
+      try {
+        let r=await fetch(up,{method:"POST",body:fd});
+        let txt=await r.text();
+        show(r.ok ? "✅ Uploaded: "+txt : "❌ Upload failed: "+txt);
+      } catch(e){ show("❌ Upload error: "+e.message); }
+    }
+
+    async function download(){
+      let n=document.getElementById("name").value.trim();
+      if(!n) return show("⚠ Please enter a filename to download.");
+      try {
+        let r=await fetch(`${down}?name=${encodeURIComponent(n)}`);
+        if(!r.ok){ let txt=await r.text(); return show("❌ Download failed: "+txt); }
+        let b=await r.blob(); let a=document.createElement("a");
+        a.href=URL.createObjectURL(b); a.download=n; a.click();
+        show("✅ Downloaded: "+n);
+      } catch(e){ show("❌ Download error: "+e.message); }
+    }
+
+    function show(m){document.getElementById("status").textContent=m;}
+  </script>
+</body>
+</html>
