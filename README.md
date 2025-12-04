@@ -32,15 +32,16 @@ The platform consists of three main components:
 
 ### Steps to Deploy
 #### 1. AWS Account Setup
-- Created a new AWS account.
-- Configured basic settings and security.
+- Create a new AWS account.
+- Configure basic settings and security.
+
 
 #### 2. IAM Users and Permissions
-- Created IAM users for project access.
-- Assigned appropriate permissions (S3 full access).
-- Ensured least‑privilege principle for security.
+- Create IAM users for project access.
+- Assign appropriate permissions.
+- Ensure least‑privilege principle for security.
 
 #### 3. S3 Bucket Creation
-- Created an Amazon S3 bucket for file storage.
-- Configured bucket name and region.
-- Applied basic bucket policies for access control.
+- Create an Amazon S3 bucket for file storage.
+- Configure bucket name and region.
+- Apply basic bucket policies for access control.
