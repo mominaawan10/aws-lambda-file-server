@@ -22,7 +22,7 @@ The platform consists of three main components:
 2. **AWS Lambda** → Handles upload and download logic.  
 3. **API Gateway** → Provides REST endpoints for client interaction.  
 
-*(Add your own diagram here in `docs/architecture.png`)*
+*docs/Architecture.png*
 
 ---
 
@@ -30,17 +30,17 @@ The platform consists of three main components:
 - An AWS account with permissions for S3, Lambda, and API Gateway.  
 - Basic knowledge of AWS CLI or Console.  
 
-## Steps
-### 1. AWS Account Setup
+### Steps to Deploy
+#### 1. AWS Account Setup
 - Created a new AWS account.
 - Configured basic settings and security.
 
-### 2. IAM Users and Permissions
+#### 2. IAM Users and Permissions
 - Created IAM users for project access.
 - Assigned appropriate permissions (S3 full access).
 - Ensured least‑privilege principle for security.
 
-### 3. S3 Bucket Creation
+#### 3. S3 Bucket Creation
 - Created an Amazon S3 bucket for file storage.
 - Configured bucket name and region.
 - Applied basic bucket policies for access control.
