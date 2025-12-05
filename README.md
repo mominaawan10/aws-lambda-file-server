@@ -31,17 +31,77 @@ The platform consists of three main components:
 - Basic knowledge of AWS CLI or Console.  
 
 ### Steps to Deploy
-#### 1. AWS Account Setup
-- Create a new AWS account.
-- Configure basic settings and security.
 
-
-#### 2. IAM Users and Permissions
-- Create IAM users for project access.
-- Assign appropriate permissions.
-- Ensure least‑privilege principle for security.
-
-#### 3. S3 Bucket Creation
+#### Step 1: S3 Bucket Creation
 - Create an Amazon S3 bucket for file storage.
 - Configure bucket name and region.
+  - Bucket Name: `aws-lambda-file-server-bucket`
 - Apply basic bucket policies for access control.
+
+#### Step 2: Create Lambda Functions
+
+### Upload Function
+- **Name:** `UploadFunction`
+- **Runtime:** Python 3.x
+- **Role:** IAM role with `s3:PutObject` permission
+- **Code:** Use the UploadFunction Python code.
+- **Responsibility:** Accepts file content from API Gateway and writes it to S3.
+
+### Download Function
+- **Name:** `DownloadFunction`
+- **Runtime:** Python 3.x
+- **Role:** IAM role with `s3:GetObject` permission
+- **Code:** Use the DownloadFunction Python code.
+- **Responsibility:** Fetches file from S3 and returns it to the client.
+
+---
+
+#### Step 3: Configure API Gateway
+- **API Name:** `file-sharing-api-amc`
+- **Resource Path:** `/files`
+- **Methods:**
+  - `POST` → integrates with `UploadFunction`
+  - `GET` → integrates with `DownloadFunction`
+- **Enable CORS:** Allow `GET` and `POST` from browsers.
+
+---
+
+#### Step 4: Method Configuration
+
+### GET Method
+- **Purpose:** Retrieve files from S3 via `DownloadFunction`.
+- **Setup:**
+  - Validate query string parameter `fileName`.
+  - Map incoming request to Lambda input using a JSON template.
+  - 
+- **Mapping Template Example:**
+  ```json
+  {
+    "fileName": "$input.params('fileName')"
+  }
+  
+---
+
+#### Step 6: Configure POST Method
+- **Purpose:** Handle file uploads via `UploadFunction`.
+- **Integration Request:**
+  - Go to **Integration Request → Mapping Templates**.
+  - Add a new template with **Content Type:** `text/plain`.
+  - Define the mapping to pass both file name and file content to Lambda.
+
+- **Mapping Template Example:**
+  ```json
+  {
+    "fileName": "$input.params('fileName')",
+    "content": "$input.body"
+  }
+  
+---
+
+#### Step 7: Deploy API Gateway
+- In API Gateway, click **Actions → Deploy API**.
+- Select the stage (e.g., `dev`).
+- After deployment, note the **Invoke URL**:
+- https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev
+
+
