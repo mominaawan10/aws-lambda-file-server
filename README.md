@@ -62,41 +62,37 @@ The platform consists of three main components:
 - **Methods:**
   - `POST` → integrates with `UploadFunction`
   - `GET` → integrates with `DownloadFunction`
-- **Enable CORS:** Allow `GET` and `POST` from browsers.
+  - `OPTIONS` → for CORS preflight
+- **Enable CORS:** Allow `GET`, `POST`, and `OPTIONS` from browsers.
+- **Binary Media Types:** (API Gateway → Settings)
+Add the following media types to support text, binary, and image uploads:
+/ application/octet-stream
+image/jpeg
+image/png
+application/pdf
+application/vnd.openxmlformats-officedocument.wordprocessingml.document multipart/form-data
+image/*
 
 ---
 
 #### Step 4: Method Configuration
 
-### Configure GET Method
+### GET Method
 - **Purpose:** Retrieve files from S3 via `DownloadFunction`.
 - **Setup:**
   - Validate query string parameter `fileName`.
-  - Map incoming request to Lambda input using a JSON template.
-  - 
-- **Mapping Template Example:**
-  ```json
-  {
-    "fileName": "$input.params('fileName')"
-  }
+  - Enable Lambda Proxy Integration. No mapping templates are required as the Lambda receives the full request context.
 
-### Configure POST Method
+### POST Method
 - **Purpose:** Handle file uploads via `UploadFunction`.
 - **Integration Request:**
   - Go to **Integration Request → Mapping Templates**.
   - Add a new template with **Content Type:** `text/plain`.
-  - Define the mapping to pass both file name and file content to Lambda.
-
-- **Mapping Template Example:**
-  ```json
-  {
-    "fileName": "$input.params('fileName')",
-    "content": "$input.body"
-  }
+  - Enable Lambda Proxy Integration. No mapping templates are required as the Lambda receives the full request context.
   
 ---
 
-#### Step 5: Deploy API Gateway
+#### Step 5: Deploy the API
 - In API Gateway, click **Actions → Deploy API**.
 - Select the stage (e.g., `dev`).
 - After deployment, note the **Invoke URL**:
@@ -107,9 +103,9 @@ The platform consists of three main components:
 
 Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
 
-(i) Upload a File
+**(i) Upload a File**
 
-## Using Postman
+### Using Postman
 1. Open Postman and create a new request.  
 2. Set the **method** to `POST`.  
 3. Enter the URL in the format:  
@@ -119,17 +115,17 @@ Once your API Gateway and Lambda integration is deployed, you can test the funct
 5. In the **Body**, select **raw** and enter the file content.
 6. Send the request. The file will be uploaded to your S3 bucket.
 
-## Using cURL
+### Using cURL
 ```bash
-curl --location 'https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=hello.txt' \
+curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt' \
 --form 'file=@"/C:/Users/hp/Desktop/hello.txt"'
 ```
 
-(ii) Download a File
+**(ii) Download a File**
 
 You can verify that the file was uploaded correctly by downloading it back from the API.
 
-## Using Postman
+### Using Postman
 1. Open Postman and create a new request.  
 2. Set the **method** to `GET`.  
 3. Enter the URL in the format:  
@@ -137,23 +133,23 @@ You can verify that the file was uploaded correctly by downloading it back from 
 4. Send the request.  
 5. The response should return the file content you uploaded (e.g., `Hello World!`).
 
-## Using cURL
+### Using cURL
 ```bash
-curl --location 'https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=hello.txt'
+curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt'
 ```
 
 #### Step 7: Frontend Deployment (Optional)
 
 You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with your API Gateway + Lambda file server.
 
-## 1. Create S3 Bucket
+### 1. Create S3 Bucket
 - Go to **AWS Console → S3 → Create bucket**.
 - Choose a unique name (e.g., `file-server-frontend-bucket`) and same region as your API.
 - Enable **Static website hosting** in bucket **Properties**.
 - Set **Index document** to `index.html`.
 
 
-## 2. Upload Frontend Files
+### 2. Upload Frontend Files
 - Upload your `index.html` (and any CSS/JS files).
 - Make objects publicly readable (bucket policy or object permissions).
 - Bucket policy for public read:
@@ -171,25 +167,9 @@ You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with
     ]
   }
 
-## 3. API Integration for Frontend
+### 3. API Integration for Frontend
 
 Make sure your API Gateway is configured correctly before testing the frontend:
-
-### Lambda Proxy Integration
-- Enabled for both `POST` and `GET` methods.
-- This allows the Lambda function to receive full request context (headers, body, query parameters).
-
-### Binary Media Types (API Gateway → Settings)
-Add the following media types to support text, binary, and image uploads:
-*/*
-application/octet-stream  
-image/jpeg
-image/png
-application/pdf
-application/vnd.openxmlformats-officedocument.wordprocessingml.document
-multipart/form-data
-image/*
-
 
 ### Method Response Headers
 
@@ -220,26 +200,26 @@ method.response.header.Access-Control-Allow-Methods: 'GET,OPTIONS,POST'
 method.response.header.Access-Control-Allow-Origin: '*'
 ```
 
-## 4. Connect Frontend to API
+### 4. Connect Frontend to API
 - In your `index.html`, set the API base URL:
   ```javascript
   const API_BASE = "https://<api-id>.execute-api.<region>.amazonaws.com/dev/files";
 
 - Replace `<api-id>` and `<region>` with your actual API Gateway values.
-
 - The frontend will use this base URL to send:
   - **POST** requests for file uploads.
   - **GET** requests for file downloads.
 ---
 
-## 5. Test Frontend
-- Open the **Static website hosting URL** (e.g., `http://my-frontend-bucket.s3-website-us-east-1.amazonaws.com`).
+### 5. Test Frontend
+- Open the **Static website hosting URL** (e.g., `http://<your-bucket-name>.s3-website-<region>.amazonaws.com`).
 - Use the **Upload card** to select and send a file.
 - Use the **Download card** to enter a file name (e.g., `test.txt`) and verify the content is returned.
 ---
 
-## 6. Troubleshooting:
+### 6. Troubleshooting:
 - Common errors:
 - {"message":"Missing Authentication Token"} → wrong path or method.
 - CORS errors → missing OPTIONS headers.
 - 403 Forbidden → bucket policy not set.
+---
