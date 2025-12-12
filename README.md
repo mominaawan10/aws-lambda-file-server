@@ -68,7 +68,7 @@ The platform consists of three main components:
 
 #### Step 4: Method Configuration
 
-### GET Method
+### Configure GET Method
 - **Purpose:** Retrieve files from S3 via `DownloadFunction`.
 - **Setup:**
   - Validate query string parameter `fileName`.
@@ -79,10 +79,8 @@ The platform consists of three main components:
   {
     "fileName": "$input.params('fileName')"
   }
-  
----
 
-#### Step 6: Configure POST Method
+### Configure POST Method
 - **Purpose:** Handle file uploads via `UploadFunction`.
 - **Integration Request:**
   - Go to **Integration Request → Mapping Templates**.
@@ -98,14 +96,14 @@ The platform consists of three main components:
   
 ---
 
-#### Step 7: Deploy API Gateway
+#### Step 5: Deploy API Gateway
 - In API Gateway, click **Actions → Deploy API**.
 - Select the stage (e.g., `dev`).
 - After deployment, note the **Invoke URL**:
 
 ---
 
-#### Step 8: Testing the File Upload and Download
+#### Step 6: Testing the File Upload and Download
 
 Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
 
@@ -123,9 +121,8 @@ Once your API Gateway and Lambda integration is deployed, you can test the funct
 
 ## Using cURL
 ```bash
-curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt' \
---header 'Content-Type: text/plain' \
---data 'Hello World from A Monk in Cloud!'
+curl --location 'https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=hello.txt' \
+--form 'file=@"/C:/Users/hp/Desktop/hello.txt"'
 ```
 
 (ii) Download a File
@@ -142,10 +139,10 @@ You can verify that the file was uploaded correctly by downloading it back from 
 
 ## Using cURL
 ```bash
-curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt'
+curl --location 'https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=hello.txt'
 ```
 
-#### Step 9: Frontend Deployment (Optional)
+#### Step 7: Frontend Deployment (Optional)
 
 You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with your API Gateway + Lambda file server.
 
@@ -178,14 +175,14 @@ You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with
 
 Make sure your API Gateway is configured correctly before testing the frontend:
 
-### ✅ Lambda Proxy Integration
+### Lambda Proxy Integration
 - Enabled for both `POST` and `GET` methods.
 - This allows the Lambda function to receive full request context (headers, body, query parameters).
 
-### ✅ Binary Media Types (API Gateway → Settings)
+### Binary Media Types (API Gateway → Settings)
 Add the following media types to support text, binary, and image uploads:
 */*
-application/octet-stream
+application/octet-stream  
 image/jpeg
 image/png
 application/pdf
@@ -194,7 +191,7 @@ multipart/form-data
 image/*
 
 
-### ✅ Method Response Headers
+### Method Response Headers
 
 #### For `GET /files`
 - Status: `200`
@@ -215,7 +212,7 @@ image/*
   - `Access-Control-Allow-Methods`
   - `Access-Control-Allow-Origin`
 
-### ✅ Integration Response Headers (OPTIONS → 200)
+### Integration Response Headers (OPTIONS → 200)
 Map the following headers:
 ```text
 method.response.header.Access-Control-Allow-Headers: 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'
@@ -240,3 +237,9 @@ method.response.header.Access-Control-Allow-Origin: '*'
 - Use the **Upload card** to select and send a file.
 - Use the **Download card** to enter a file name (e.g., `test.txt`) and verify the content is returned.
 ---
+
+## 6. Troubleshooting:
+- Common errors:
+- {"message":"Missing Authentication Token"} → wrong path or method.
+- CORS errors → missing OPTIONS headers.
+- 403 Forbidden → bucket policy not set.
