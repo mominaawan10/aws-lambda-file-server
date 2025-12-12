@@ -102,7 +102,7 @@ image/*
 ### Step 6: Testing the File Upload and Download
 Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
 
-**(i) Upload a File**
+ i. **Upload a File**
 
 #### Using Postman
 1. Open Postman and create a new request.  
@@ -120,7 +120,7 @@ curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?f
 --form 'file=@"/C:/Users/hp/Desktop/hello.txt"'
 ```
 
-**(ii) Download a File**
+ **ii. Download a File**
 
 You can verify that the file was uploaded correctly by downloading it back from the API.
 
