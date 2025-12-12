@@ -76,18 +76,16 @@ image/*
 ---
 
 ### Step 4: Method Configuration
-
-#### GET Method
-- **Purpose:** Retrieve files from S3 via `DownloadFunction`.
-- **Setup:**
-  - Validate query string parameter `fileName`.
-  - Enable Lambda Proxy Integration. No mapping templates are required as the Lambda receives the full request context.
+For POST and GET methods, configure Lambda integration with UploadFunction and DownloadFunction respectively.
 
 #### POST Method
 - **Purpose:** Handle file uploads via `UploadFunction`.
 - **Integration Request:**
-  - Go to **Integration Request → Mapping Templates**.
-  - Add a new template with **Content Type:** `text/plain`.
+  - Enable Lambda Proxy Integration. No mapping templates are required as the Lambda receives the full request context.
+
+#### GET Method
+- **Purpose:** Retrieve files from S3 via `DownloadFunction`.
+- **Integration Request:**
   - Enable Lambda Proxy Integration. No mapping templates are required as the Lambda receives the full request context.
   
 ---
@@ -104,38 +102,37 @@ Once your API Gateway and Lambda integration is deployed, you can test the funct
 
   ***i. Upload a File***
 
-#### Using Postman
+#### Using Postman:
 1. Open Postman and create a new request.  
 2. Set the **method** to `POST`.  
-3. Enter the URL in the format:  
-- https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txtfileName=testing.txt
+3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txtfileName=testing.txt`
 4. In the **Headers**, set:  
 - Content-Type: text/plain
 5. In the **Body**, select **raw** and enter the file content.
 6. Send the request. The file will be uploaded to your S3 bucket.
 
-#### Using cURL
+#### Using cURL:
 ```bash
 curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt' \
 --form 'file=@"/C:/Users/hp/Desktop/hello.txt"'
 ```
 
   ***ii. Download a File***
-
 You can verify that the file was uploaded correctly by downloading it back from the API.
 
-#### Using Postman
+#### Using Postman:
 1. Open Postman and create a new request.  
 2. Set the **method** to `GET`.  
-3. Enter the URL in the format:  
-- https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt
+3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt`
 4. Send the request.  
 5. The response should return the file content you uploaded (e.g., `Hello World!`).
 
-#### Using cURL
+#### Using cURL:
 ```bash
 curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt'
 ```
+
+---
 
 ### Step 7: Frontend Deployment (Optional)
 You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with your API Gateway + Lambda file server.
@@ -145,7 +142,6 @@ You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with
 - Choose a unique name (e.g., `file-server-frontend-bucket`) and same region as your API.
 - Enable **Static website hosting** in bucket **Properties**.
 - Set **Index document** to `index.html`.
-
 
 #### 2. Upload Frontend Files
 - Upload your `index.html` (and any CSS/JS files).
@@ -168,7 +164,7 @@ You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with
 #### 3. API Integration for Frontend
 Make sure your API Gateway is configured correctly before testing the frontend.
 
-##### Method Response Headers
+### Method Response Headers
 
 #### For `GET /files`
 - Status: `200`
@@ -206,13 +202,12 @@ method.response.header.Access-Control-Allow-Origin: '*'
 - The frontend will use this base URL to send:
   - **POST** requests for file uploads.
   - **GET** requests for file downloads.
----
 
 #### 5. Test Frontend
 - Open the **Static website hosting URL** (e.g., `http://<your-bucket-name>.s3-website-<region>.amazonaws.com`).
 - Use the **Upload card** to select and send a file.
-- Use the **Download card** to enter a file name (e.g., `test.txt`) and verify the content is returned.
----
+- Use the **Get Files card** to list all available files stored in S3.
+- Then use the **Download card** to download a specific file (e.g., `test.txt`) and verify that the correct content is returned.
 
 #### 6. Troubleshooting:
 - Common errors:
