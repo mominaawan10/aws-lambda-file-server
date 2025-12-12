@@ -42,14 +42,14 @@ The platform consists of three main components:
 
 ### Upload Function
 - **Name:** `UploadFunction`
-- **Runtime:** Python 3.x
+- **Runtime:** Python 3.9
 - **Role:** IAM role with `s3:PutObject` permission
 - **Code:** Use the UploadFunction Python code.
 - **Responsibility:** Accepts file content from API Gateway and writes it to S3.
 
 ### Download Function
 - **Name:** `DownloadFunction`
-- **Runtime:** Python 3.x
+- **Runtime:** Python 3.9
 - **Role:** IAM role with `s3:GetObject` permission
 - **Code:** Use the DownloadFunction Python code.
 - **Responsibility:** Fetches file from S3 and returns it to the client.
@@ -104,4 +104,46 @@ The platform consists of three main components:
 - After deployment, note the **Invoke URL**:
 - https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev
 
+---
+
+#### Step 8: Testing the File Upload and Download
+
+Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
+
+---
+
+### Upload a File
+
+## Using Postman
+1. Open Postman and create a new request.  
+2. Set the **method** to `POST`.  
+3. Enter the URL in the format:  
+- https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=test.txt
+4. In the **Headers**, set:  
+- Content-Type: text/plain
+5. In the **Body**, select **raw** and enter the file content.
+6. Send the request. The file will be uploaded to your S3 bucket.
+
+Using cURL
+```bash
+curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt' \
+--header 'Content-Type: text/plain' \
+--data 'Hello World from A Monk in Cloud!'
+
+### Download a File
+
+You can verify that the file was uploaded correctly by downloading it back from the API.
+
+Using Postman
+1. Open Postman and create a new request.  
+2. Set the **method** to `GET`.  
+3. Enter the URL in the format:  
+- https://csdg8czp44.execute-api.eu-north-1.amazonaws.com/dev/files?fileName=test.txt
+
+4. Send the request.  
+5. The response should return the file content you uploaded (e.g., `Hello World!`).
+
+### Using cURL
+```bash
+curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt'
 
