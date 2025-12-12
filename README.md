@@ -66,12 +66,17 @@ The platform consists of three main components:
 - **Enable CORS:** Allow `GET`, `POST`, and `OPTIONS` from browsers.
 - **Binary Media Types:** (API Gateway → Settings)
 Add the following media types to support text, binary, and image uploads:
-/ application/octet-stream
-image/jpeg
-image/png
-application/pdf
-application/vnd.openxmlformats-officedocument.wordprocessingml.document multipart/form-data
-image/*
+
+{
+  */*
+  application/octet-stream
+  image/jpeg
+  image/png
+  application/pdf
+  application/vnd.openxmlformats-officedocument.wordprocessingml.document 
+  multipart/form-data
+  image/*
+}
 
 ---
 
