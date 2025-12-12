@@ -1,94 +1,100 @@
 import json
 import boto3
 import base64
+from io import BytesIO
+from email import message_from_bytes
 
 s3 = boto3.client('s3')
-BUCKET_NAME = 'aws-lambda-file-server-bucket' # Replace with your actual bucket name
+BUCKET_NAME = 'aws-lambda-file-server-bucket'  # Replace with your actual bucket name
 
 
 def lambda_handler(event, context):
     try:
-        query_params = event.get('queryStringParameters')
-
-        # If fileName is provided → Download the file
-        if query_params and query_params.get('fileName'):
-            file_name = query_params['fileName']
-            print(f"Downloading file: {file_name}")
-
-            # CRITICAL FIX 1: Fetch metadata to get ContentType 
-            head_obj = s3.head_object(Bucket=BUCKET_NAME, Key=file_name)
-            s3_content_type = head_obj.get('ContentType', 'application/octet-stream')
-
-            file_obj = s3.get_object(Bucket=BUCKET_NAME, Key=file_name)
-            file_content = file_obj['Body'].read()
-
-            print(f"S3 Content-Type found: {s3_content_type}")
-            
-            # Determine if it should be treated as text content
-            is_text_content = s3_content_type.startswith('text/') or 'application/json' in s3_content_type
-
-            if is_text_content:
-                # Return text data as RAW (isBase64Encoded: False)
-                try:
-                    body = file_content.decode('utf-8')
-                    
-                    return {
-                        "statusCode": 200,
-                        "isBase64Encoded": False, 
-                        "body": body,
-                        "headers": {
-                            # CRITICAL FIX 2: Use the actual S3 Content-Type
-                            "Content-Type": s3_content_type, 
-                            "Content-Disposition": f'attachment; filename="{file_name}"',
-                            "Access-Control-Allow-Origin": "*",
-                            "Access-Control-Allow-Headers": "*",
-                            "Access-Control-Allow-Methods": "GET, OPTIONS"
-                        }
-                    }
-
-                except UnicodeDecodeError:
-                    # Fall through to binary handling if text decoding fails
-                    pass 
-
-            # Handle Binary Files (or failed text decode)
-            print("Treating as binary file: Base64 encoding body.")
-            body = base64.b64encode(file_content).decode('utf-8')
-
-            # CRITICAL FIX 3: Return binary data as Base64 (isBase64Encoded: True)
+        # Validate fileName parameter
+        query_params = event.get('queryStringParameters', {})
+        if not query_params or not query_params.get('fileName'):
             return {
-                "statusCode": 200,
-                "isBase64Encoded": True, 
-                "body": body,
-                "headers": {
-                    # CRITICAL FIX 4: Use the actual S3 Content-Type
-                    "Content-Type": s3_content_type, 
-                    "Content-Disposition": f'attachment; filename="{file_name}"',
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Allow-Methods": "GET, OPTIONS"
-                }
+                "statusCode": 400,
+                "headers": {"Access-Control-Allow-Origin": "*"},
+                "body": json.dumps({"error": "Missing fileName parameter"})
             }
 
-        # Otherwise → List all files
+        file_name = query_params['fileName']
+        
+        # Get request body and headers
+        body = event.get("body", "")
+        is_base64 = event.get('isBase64Encoded', False)
+        headers = event.get('headers', {})
+        
+        # Get Content-Type header (case-insensitive)
+        content_type_header = headers.get('Content-Type') or headers.get('content-type', '')
+        
+        print(f"Uploading file: {file_name}")
+        print(f"Content-Type header: {content_type_header}")
+        print(f"Is Base64 Encoded: {is_base64}")
+
+        # Decode base64 body if needed
+        if is_base64:
+            body_bytes = base64.b64decode(body)
         else:
-            print("Listing all files")
-            response = s3.list_objects_v2(Bucket=BUCKET_NAME)
+            body_bytes = body.encode('utf-8') if isinstance(body, str) else body
 
-            files = [obj['Key'] for obj in response.get('Contents', [])]
+        # Parse multipart/form-data
+        if 'multipart/form-data' not in content_type_header:
+            raise ValueError("Expected multipart/form-data content type")
 
-            return {
-                "statusCode": 200,
-                "headers": {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "*",
-                    "Access-Control-Allow-Methods": "GET, OPTIONS",
-                    "Content-Type": "application/json"
-                },
-                "body": json.dumps(files)
-            }
+        # Parse the multipart data using email library
+        # Add Content-Type header to the body for proper parsing
+        message_bytes = f"Content-Type: {content_type_header}\r\n\r\n".encode() + body_bytes
+        message = message_from_bytes(message_bytes)
+        
+        file_content = None
+        content_type = 'application/octet-stream'
+        
+        # Extract file from multipart message
+        for part in message.walk():
+            if part.get_content_disposition() == 'form-data':
+                # Check if this part has a filename (it's a file upload)
+                content_disposition = part.get('Content-Disposition', '')
+                if 'filename=' in content_disposition:
+                    file_content = part.get_payload(decode=True)
+                    content_type = part.get_content_type() or 'application/octet-stream'
+                    print(f"Extracted file type: {content_type}")
+                    break
+
+        if file_content is None:
+            raise ValueError("Could not extract file from multipart form. Ensure form field name is 'file'")
+
+        print(f"File content length: {len(file_content)} bytes")
+
+        # Upload to S3 with correct Content-Type
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=file_name,
+            Body=file_content,
+            ContentType=content_type
+        )
+
+        print(f"Successfully uploaded {file_name} to S3")
+
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps({
+                "message": "File uploaded successfully",
+                "fileName": file_name,
+                "size": len(file_content),
+                "contentType": content_type
+            })
+        }
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Upload error: {str(e)}")
         import traceback
         traceback.print_exc()
 
@@ -97,7 +103,8 @@ def lambda_handler(event, context):
             "headers": {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Content-Type": "application/json"
             },
             "body": json.dumps({"error": str(e)})
         }
