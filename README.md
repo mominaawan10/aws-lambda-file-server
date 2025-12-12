@@ -64,7 +64,7 @@ The platform consists of three main components:
   - `GET` → integrates with `DownloadFunction`
   - `OPTIONS` → for CORS preflight
 - **Enable CORS:** Allow `GET`, `POST`, and `OPTIONS` from browsers.
-- **Binary Media Types:** (API Gateway → Settings)
+- **Binary Media Types:** (API Gateway → Settings)  
 Add the following media types to support text, binary, and image uploads:
 ```
   */*   
