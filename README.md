@@ -27,7 +27,7 @@ The platform consists of three main components:
 ---
 
 ## Prerequisites
-- An AWS account with permissions for S3, Lambda, and API Gateway.  
+- An AWS account with permissions for IAM, S3, Lambda, and API Gateway.  
 - Basic knowledge of AWS CLI or Console.  
 
 ## Steps to Deploy
@@ -103,7 +103,7 @@ For POST and GET methods, configure Lambda integration with UploadFunction and D
 ### Step 6: Testing the File Upload and Download
 Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
 
-  ***i. Upload a File***
+***i. Upload a File***
 
 #### Using Postman:
 1. Open Postman and create a new request.  
@@ -122,7 +122,7 @@ curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?f
 ```
 - ✅ If successful, you will see Status: 200 OK and a confirmation message in the response.
 
-  ***ii. Download a File***
+***ii. Download a File***
 
 #### Using Postman:
 1. Open Postman and create a new request.  
@@ -173,7 +173,7 @@ You can host a simple HTML/JavaScript frontend on **Amazon S3** to interact with
 #### 3. API Integration for Frontend
 Make sure your API Gateway is configured correctly before testing the frontend.
 
-### Method Response Headers
+#### Method Response Headers
 
 #### For `GET /files`
 - Status: `200`
