@@ -108,10 +108,11 @@ Once your API Gateway and Lambda integration is deployed, you can test the funct
 #### Using Postman:
 1. Open Postman and create a new request.  
 2. Set the **method** to `POST`.  
-3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txtfileName=testing.txt`
-4. In the **Headers**, set:  
-- Content-Type: text/plain
-5. In the **Body**, select **raw** and enter the file content.
+3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt`
+4. Go to the Body tab → select `form-data`.
+5. Add a key-value pair:
+ - Key: file (type = File)
+ - Value: Select your file (e.g., hello.txt)
 6. Send the request. The file will be uploaded to your S3 bucket.
 
 #### Using cURL:
@@ -119,22 +120,27 @@ Once your API Gateway and Lambda integration is deployed, you can test the funct
 curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt' \
 --form 'file=@"/C:/Users/hp/Desktop/hello.txt"'
 ```
+✅ If successful, you will see Status: 200 OK and a confirmation message in the response.
 
   ***ii. Download a File***
-You can verify that the file was uploaded correctly by downloading it back from the API.
 
 #### Using Postman:
 1. Open Postman and create a new request.  
 2. Set the **method** to `GET`.  
-3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=test.txt`
-4. Send the request.  
-5. The response should return the file content you uploaded (e.g., `Hello World!`).
+3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt`
+4. Go to the Params tab and confirm:
+  - Key: fileName
+  - Value: hello.txt
+5. Leave the Body tab set to `none`.
+6. Send the request.  
+7. The response should return the file content you uploaded (e.g., `Hello World!`).
 
 #### Using cURL:
 ```bash
 curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt'
 ```
-
+- If successful, you will see Status: 200 OK and the file content in the response.
+  
 ---
 
 ### Step 7: Frontend Deployment (Optional)
