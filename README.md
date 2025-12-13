@@ -103,17 +103,20 @@ For POST and GET methods, configure Lambda integration with UploadFunction and D
 ### Step 6: Testing the File Upload and Download
 Once your API Gateway and Lambda integration is deployed, you can test the functionality by uploading and downloading files. You can use either **Postman** or the **cURL utility**.
 
-<b>i. Upload a File</b>
+**i. Upload a File**
 
 #### Using Postman:
 1. Open Postman and create a new request.  
 2. Set the **method** to `POST`.  
 3. Enter the URL in the format: `https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?fileName=hello.txt`
-4. Go to the Body tab → select `form-data`.
-5. Add a key-value pair:
+4. Go to the Params tab and confirm:
+   - Key: fileName
+   - Value: hello.txt
+5. Go to the Body tab → select `form-data`.
+6. Add a key-value pair:
    - Key: file (type = File)
    - Value: Select your file (e.g., hello.txt)
-6. Send the request. The file will be uploaded to your S3 bucket.
+7. Send the request. The file will be uploaded to your S3 bucket.
 
 #### Using cURL:
 ```bash
@@ -122,7 +125,7 @@ curl --location 'https://<api-id>.execute-api.<region>.amazonaws.com/dev/files?f
 ```
 - ✅ If successful, you will see Status: 200 OK and a confirmation message in the response.
 
-<b>ii. Download a File</b>
+**ii. Download a File**
 
 #### Using Postman:
 1. Open Postman and create a new request.  
